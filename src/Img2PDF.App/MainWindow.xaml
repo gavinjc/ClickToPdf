@@ -1,0 +1,520 @@
+<Window
+    x:Class="Img2PDF.App.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Img2PDF.App.ViewModels"
+    xmlns:converters="using:Img2PDF.App.Converters">
+
+    <Grid
+        x:Name="RootGrid"
+        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+        AllowDrop="True"
+        DragOver="RootGrid_DragOver"
+        Drop="RootGrid_Drop">
+        <Grid.Resources>
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
+            <converters:PageCountConverter x:Key="PageCount"/>
+
+            <!-- Defined here rather than in GridView.Resources: a StaticResource only resolves
+                 against its element's ancestor chain, and the preview overlay's buttons are
+                 siblings of the GridView, not descendants of it — a GridView-scoped style is
+                 invisible to them. That out-of-scope lookup doesn't fail cleanly here; it's a
+                 native crash (0xc000027b), confirmed by bisection, so this isn't just tidiness. -->
+            <Style x:Key="IconButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Padding" Value="6,4"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border
+                                Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}">
+                                <ContentPresenter
+                                    Content="{TemplateBinding Content}"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </Grid.Resources>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Padding="12,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                    <TextBlock Text="Zoom" VerticalAlignment="Center"/>
+                    <Slider x:Name="ZoomSlider" Minimum="120" Maximum="400" Value="200" Width="200"/>
+                    <Button
+                        Content="Undo"
+                        Click="UndoButton_Click"
+                        ToolTipService.ToolTip="Undo the last change"
+                        AutomationProperties.Name="Undo"/>
+                    <SplitButton
+                        Content="Sort"
+                        ToolTipService.ToolTip="Change page order"
+                        AutomationProperties.Name="Sort">
+                        <SplitButton.Flyout>
+                            <MenuFlyout Placement="Bottom">
+                                <MenuFlyoutItem Text="Name (natural)" Click="SortByName_Click"/>
+                                <MenuFlyoutItem Text="Date taken" Click="SortByDateTaken_Click"/>
+                                <MenuFlyoutItem Text="Date modified" Click="SortByDateModified_Click"/>
+                                <MenuFlyoutSeparator/>
+                                <MenuFlyoutItem Text="Reverse current" Click="ReverseOrder_Click"/>
+                            </MenuFlyout>
+                        </SplitButton.Flyout>
+                    </SplitButton>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Text="{Binding Pages.Count, Converter={StaticResource PageCount}}"/>
+                    <Button Content="Save" Style="{StaticResource AccentButtonStyle}" Click="SaveButton_Click"/>
+                    <Button
+                        Style="{StaticResource IconButtonStyle}"
+                        Click="AboutButton_Click"
+                        ToolTipService.ToolTip="About Scanstack"
+                        AutomationProperties.Name="About Scanstack">
+                        <FontIcon Glyph="&#xE946;" FontSize="16"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <Expander Grid.Row="1" Header="Options" IsExpanded="False" Margin="12,0,12,8"
+                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                <StackPanel Orientation="Horizontal" Spacing="16" Padding="8">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Page size"/>
+                        <ComboBox x:Name="PageSizeCombo" SelectedIndex="0" SelectionChanged="PageSizeCombo_SelectionChanged">
+                            <ComboBoxItem Content="A4"/>
+                            <ComboBoxItem Content="Letter"/>
+                            <ComboBoxItem Content="Match image"/>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Margins"/>
+                        <ComboBox x:Name="MarginsCombo" SelectedIndex="0" SelectionChanged="MarginsCombo_SelectionChanged">
+                            <ComboBoxItem Content="None"/>
+                            <ComboBoxItem Content="Narrow (5 mm)"/>
+                            <ComboBoxItem Content="Standard (10 mm)"/>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Orientation"/>
+                        <ComboBox x:Name="OrientationCombo" SelectedIndex="0" SelectionChanged="OrientationCombo_SelectionChanged">
+                            <ComboBoxItem Content="Auto per page"/>
+                            <ComboBoxItem Content="Force portrait"/>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Quality"/>
+                        <ComboBox x:Name="QualityCombo" SelectedIndex="0" SelectionChanged="QualityCombo_SelectionChanged">
+                            <ComboBoxItem Content="Original"/>
+                            <ComboBoxItem Content="High (300 DPI)"/>
+                            <ComboBoxItem Content="Medium (200 DPI)"/>
+                            <ComboBoxItem Content="Small (150 DPI)"/>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Spacing="4" VerticalAlignment="Bottom">
+                        <CheckBox Content="Greyscale" IsChecked="{Binding Greyscale, Mode=TwoWay}"/>
+                        <CheckBox
+                            Content="Make searchable (OCR)"
+                            IsChecked="{Binding Searchable, Mode=TwoWay}"
+                            ToolTipService.ToolTip="Adds an invisible, searchable text layer. Works best on clean printed text; increases save time."/>
+                        <CheckBox
+                            Content="Auto-deskew"
+                            IsChecked="{Binding Deskew, Mode=TwoWay}"
+                            ToolTipService.ToolTip="Straightens pages scanned in slightly crooked. Only helps pages with real printed text, and adds the same OCR cost as Make searchable."/>
+                    </StackPanel>
+                </StackPanel>
+            </Expander>
+
+            <StackPanel
+                x:Name="SaveProgressPanel"
+                Grid.Row="2"
+                Orientation="Horizontal"
+                Spacing="12"
+                Padding="12,0,12,8"
+                Visibility="Collapsed">
+                <ProgressBar x:Name="SaveProgressBar" Width="300" Minimum="0"/>
+                <Button x:Name="CancelSaveButton" Content="Cancel" Click="CancelSaveButton_Click"/>
+            </StackPanel>
+
+            <StackPanel
+                x:Name="EmptyStatePanel"
+                Grid.Row="3"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="12"
+                Visibility="{Binding ShowEmptyState, Converter={StaticResource BoolToVisibility}}">
+                <FontIcon Glyph="&#xE8B9;" FontSize="48" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
+                <TextBlock Text="Drop images here, or" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
+                <Button
+                    Content="Choose images…"
+                    Click="ChooseImagesButton_Click"
+                    Style="{StaticResource AccentButtonStyle}"
+                    HorizontalAlignment="Center"
+                    AutomationProperties.Name="Choose images"/>
+            </StackPanel>
+
+            <GridView
+                x:Name="PagesGridView"
+                Grid.Row="3"
+                ItemsSource="{x:Bind ViewModel.Pages}"
+                CanReorderItems="True"
+                AllowDrop="True"
+                CanDragItems="True"
+                SelectionMode="Extended"
+                IsItemClickEnabled="False"
+                Visibility="{Binding ShowEmptyState, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}"
+                SelectionChanged="PagesGridView_SelectionChanged"
+                KeyDown="PagesGridView_KeyDown">
+                <GridView.Resources>
+                    <!-- GridViewItem's default template paints PointerOver/Pressed/Selected chrome
+                         above the item's own content, which was washing out the always-visible
+                         corner buttons on hover — overriding individual brush resources didn't
+                         fix it, so this replaces the container template entirely with a plain
+                         ContentPresenter (no built-in hover/pressed/selection visuals). Selection
+                         highlight is drawn manually in the DataTemplate below via PageItem.IsSelected,
+                         since a container-level VisualState can't reach into the ContentPresenter's
+                         own templated content. The FocusStates group here is unrelated to selection —
+                         it restores the keyboard focus rect the container-template swap also removed,
+                         and it *can* be done at this level since it only needs to draw over the
+                         container's own bounds, not react to the bound PageItem. -->
+                    <Style x:Key="TileContainerStyle" TargetType="GridViewItem">
+                        <Setter Property="Margin" Value="0"/>
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="GridViewItem">
+                                    <Grid>
+                                        <ContentPresenter
+                                            Content="{TemplateBinding Content}"
+                                            ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                                        <Border
+                                            x:Name="FocusVisual"
+                                            BorderBrush="{ThemeResource SystemControlFocusVisualPrimaryBrush}"
+                                            BorderThickness="2"
+                                            CornerRadius="4"
+                                            IsHitTestVisible="False"
+                                            Opacity="0"/>
+                                        <VisualStateManager.VisualStateGroups>
+                                            <VisualStateGroup x:Name="FocusStates">
+                                                <VisualState x:Name="Focused">
+                                                    <VisualState.Setters>
+                                                        <Setter Target="FocusVisual.Opacity" Value="1"/>
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                                <VisualState x:Name="Unfocused"/>
+                                                <VisualState x:Name="PointerFocused"/>
+                                            </VisualStateGroup>
+                                        </VisualStateManager.VisualStateGroups>
+                                    </Grid>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </GridView.Resources>
+                <GridView.ItemContainerStyle>
+                    <StaticResource ResourceKey="TileContainerStyle"/>
+                </GridView.ItemContainerStyle>
+                <GridView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PageItem">
+                        <Grid
+                            Tag="{x:Bind}"
+                            Width="{Binding ElementName=ZoomSlider, Path=Value}"
+                            Height="{Binding ElementName=ZoomSlider, Path=Value}"
+                            Margin="4"
+                            DoubleTapped="Tile_DoubleTapped"
+                            PointerEntered="Tile_PointerEntered"
+                            PointerExited="Tile_PointerExited">
+
+                            <Border
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <Grid Grid.Row="0">
+                                        <Image
+                                            Source="{x:Bind ThumbnailSource, Mode=OneWay}"
+                                            Stretch="Uniform"
+                                            RenderTransformOrigin="0.5,0.5">
+                                            <Image.RenderTransform>
+                                                <RotateTransform Angle="{x:Bind RotationDegrees, Mode=OneWay}"/>
+                                            </Image.RenderTransform>
+                                        </Image>
+
+                                        <!-- Plain text, not ProgressRing: ProgressRing.IsActive crashed
+                                             natively (Microsoft.UI.Xaml.dll, 0xc000027b) inside this
+                                             virtualized GridView item template — confirmed via
+                                             bisection, see project memory (winui-native-crash-notes). -->
+                                        <TextBlock
+                                            Text="Loading…"
+                                            Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                                        <StackPanel
+                                            Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}"
+                                            ToolTipService.ToolTip="{Binding ErrorDetail}"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="4">
+                                            <FontIcon Glyph="&#xE783;" FontSize="24"
+                                                      Foreground="{ThemeResource SystemFillColorCriticalBrush}"/>
+                                            <TextBlock Text="Can't load" FontSize="11" HorizontalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- Filename + chrome share the bottom row so the buttons no
+                                         longer cover the page header, which is where the letterhead/
+                                         title/first column live — the part that actually tells one
+                                         page from another (spec §2). Both are inside the card Border's
+                                         own clip, unlike before, so a long filename ellipsises instead
+                                         of spilling past the tile. -->
+                                    <Grid Grid.Row="1" Padding="4,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border
+                                            Grid.Column="0"
+                                            Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
+                                            CornerRadius="4" Padding="6,2" Margin="0,0,4,0">
+                                            <TextBlock
+                                                Text="{x:Bind FileName}"
+                                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                                FontSize="11"
+                                                TextTrimming="CharacterEllipsis" MaxLines="1"/>
+                                        </Border>
+
+                                        <!-- One pill, not three separate chips: three opaque
+                                             rectangles per tile added up to dozens of competing
+                                             rectangles across a full grid. Always visible (double-click
+                                             isn't discoverable, so the magnifier is the discoverable
+                                             preview path, not a redundant one) but quiet at rest —
+                                             Tile_PointerEntered/Exited raise this pill's Opacity on
+                                             hover rather than toggling Visibility, which used to
+                                             flicker as the pointer crossed from the tile onto the
+                                             buttons themselves. -->
+                                        <Border
+                                            x:Name="ChromePill"
+                                            Grid.Column="1"
+                                            Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
+                                            CornerRadius="12"
+                                            Padding="2"
+                                            Opacity="0.55">
+                                            <StackPanel Orientation="Horizontal" Spacing="0">
+                                                <Button Style="{StaticResource IconButtonStyle}" Tag="{x:Bind}" Click="PreviewButton_Click"
+                                                        ToolTipService.ToolTip="Preview page"
+                                                        AutomationProperties.Name="Preview page">
+                                                    <FontIcon Glyph="&#xE71E;" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                                </Button>
+                                                <Button Style="{StaticResource IconButtonStyle}" Tag="{x:Bind}" Click="RotateButton_Click"
+                                                        ToolTipService.ToolTip="Rotate right"
+                                                        AutomationProperties.Name="Rotate right">
+                                                    <FontIcon Glyph="&#xE7AD;" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                                </Button>
+                                                <Button Style="{StaticResource IconButtonStyle}" Tag="{x:Bind}" Click="RemoveButton_Click"
+                                                        ToolTipService.ToolTip="Remove from document"
+                                                        AutomationProperties.Name="Remove from document">
+                                                    <FontIcon Glyph="&#xE711;" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                                </Button>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+
+                            <!-- Selection highlight: PageItem.IsSelected mirrors GridView.SelectedItems
+                                 (kept authoritative) via MainWindow's SelectionChanged handler. Two
+                                 layers so the tint stays subtle while the stroke stays crisp — a
+                                 single element at low Opacity would fade the border too. -->
+                            <Border
+                                Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibility}}"
+                                Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                Opacity="0.12"
+                                CornerRadius="4"
+                                IsHitTestVisible="False"/>
+                            <Border
+                                Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibility}}"
+                                BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
+                                BorderThickness="2"
+                                CornerRadius="4"
+                                IsHitTestVisible="False"/>
+
+                            <Border
+                                Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                CornerRadius="10" Padding="8,2" Margin="6"
+                                HorizontalAlignment="Left" VerticalAlignment="Top">
+                                <TextBlock Text="{x:Bind PageNumber, Mode=OneWay}"
+                                           Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" FontSize="12"/>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
+        </Grid>
+
+        <!-- Floating, not row-based: an Auto row here used to shift the whole grid down by however
+             tall the open bar was (spec regression — the user is looking at the grid when the save
+             confirmation appears, and it moved under them). These overlay the content instead. -->
+        <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Margin="12,8" Spacing="8">
+            <InfoBar
+                x:Name="SkippedFilesInfoBar"
+                Severity="Warning"
+                Title="Some items were skipped"
+                Message="{x:Bind ViewModel.SkippedFilesMessage, Mode=OneWay}"
+                IsOpen="{x:Bind ViewModel.HasSkippedFiles, Mode=OneWay}"
+                IsClosable="True"/>
+
+            <InfoBar
+                x:Name="SaveSuccessInfoBar"
+                Severity="Success"
+                Title="Saved"
+                IsOpen="False"
+                IsClosable="True">
+                <InfoBar.Content>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="Open" Click="OpenSavedFile_Click"/>
+                        <Button Content="Show in folder" Click="ShowSavedFileInFolder_Click"/>
+                    </StackPanel>
+                </InfoBar.Content>
+            </InfoBar>
+        </StackPanel>
+
+        <!-- Classic {Binding}, not x:Bind: x:Bind + Converter fails to compile when the
+             code-behind root is a Window (not FrameworkElement) — WinUI-desktop limitation.
+             Floating, not row-based, for the same reason as the InfoBars above: an Auto row
+             here would shift the GridView content when an error appears. -->
+        <TextBlock
+            Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+            Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+            Visibility="{Binding ErrorMessage, Converter={StaticResource BoolToVisibility}}"
+            Margin="12,8"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Bottom"/>
+
+        <!-- Hidden on the empty state — that already has its own "Choose images…" button, this
+             would just be a redundant second affordance for the same action. Shown once there's
+             at least one page, so images can still be added to a set the shell extension already
+             launched with (drag-and-drop onto RootGrid does the same, in both states). -->
+        <Button
+            Style="{StaticResource AccentButtonStyle}"
+            Click="AddMoreButton_Click"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            Margin="24"
+            Padding="14"
+            CornerRadius="24"
+            Visibility="{Binding ShowEmptyState, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}"
+            ToolTipService.ToolTip="Add more images"
+            AutomationProperties.Name="Add more images">
+            <FontIcon Glyph="&#xE710;" FontSize="18"/>
+        </Button>
+
+        <Grid
+            x:Name="PreviewOverlay"
+            Background="#CC000000"
+            Visibility="Collapsed"
+            Tapped="PreviewOverlay_Tapped">
+            <Image x:Name="PreviewImage" Stretch="Uniform" Margin="40" RenderTransformOrigin="0.5,0.5">
+                <Image.RenderTransform>
+                    <RotateTransform x:Name="PreviewImageRotation"/>
+                </Image.RenderTransform>
+            </Image>
+
+            <Button
+                Style="{StaticResource IconButtonStyle}"
+                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="16"
+                Click="PreviewCloseButton_Click"
+                Tapped="StopTappedPropagation"
+                ToolTipService.ToolTip="Close preview"
+                AutomationProperties.Name="Close preview">
+                <FontIcon Glyph="&#xE711;" FontSize="18" Foreground="White"/>
+            </Button>
+
+            <Button
+                Style="{StaticResource IconButtonStyle}"
+                HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="24"
+                Click="PreviewRotateButton_Click"
+                Tapped="StopTappedPropagation"
+                ToolTipService.ToolTip="Rotate right"
+                AutomationProperties.Name="Rotate right">
+                <FontIcon Glyph="&#xE7AD;" FontSize="18" Foreground="White"/>
+            </Button>
+
+            <TextBlock
+                x:Name="PreviewIndicatorText"
+                HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,24"
+                Foreground="White" FontSize="14"/>
+        </Grid>
+
+        <!-- MIT requires the copyright/permission notice be included with distributed copies of
+             the software; the three packages below all ship compiled into this app. Attribution
+             text is fixed (only AppVersionText is data-bound), so it's plain literal content
+             rather than anything sourced from a converter or resource. -->
+        <ContentDialog
+            x:Name="AboutDialog"
+            Title="About Scanstack"
+            CloseButtonText="Close"
+            DefaultButton="Close">
+            <ScrollViewer MaxHeight="400" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Spacing="12" Width="420">
+                    <TextBlock TextWrapping="Wrap">
+                        <Run x:Name="AppVersionText"/>
+                        <LineBreak/>
+                        Combine images into a single PDF from File Explorer.
+                    </TextBlock>
+
+                    <TextBlock Text="Third-party software" FontWeight="SemiBold"/>
+                    <TextBlock TextWrapping="Wrap" FontSize="12">
+                        PDFsharp — Copyright (c) 2001-2026 empira Software GmbH, Troisdorf (Cologne Area), Germany
+                        <LineBreak/>
+                        CommunityToolkit.Mvvm — Copyright © .NET Foundation and Contributors
+                        <LineBreak/>
+                        Microsoft.Windows.ImplementationLibrary (WIL) — Copyright (c) Microsoft Corporation. All rights reserved.
+                    </TextBlock>
+
+                    <TextBlock Text="Each is licensed under the MIT License:" FontSize="12"/>
+                    <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                        Permission is hereby granted, free of charge, to any person obtaining a copy of this
+                        software and associated documentation files (the "Software"), to deal in the Software
+                        without restriction, including without limitation the rights to use, copy, modify,
+                        merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+                        permit persons to whom the Software is furnished to do so, subject to the following
+                        conditions:
+                        <LineBreak/><LineBreak/>
+                        The above copyright notice and this permission notice shall be included in all
+                        copies or substantial portions of the Software.
+                        <LineBreak/><LineBreak/>
+                        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+                        INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+                        PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+                        HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+                        CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+                        OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+                    </TextBlock>
+                </StackPanel>
+            </ScrollViewer>
+        </ContentDialog>
+    </Grid>
+</Window>
