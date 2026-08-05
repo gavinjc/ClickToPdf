@@ -11,8 +11,10 @@ BundleArtifacts/
 *.appxsym
 *.msixsym
 
-# Per-dev-machine signing cert — never shared/committed (see M5 plan)
+# Per-dev-machine signing cert and its public half — regenerate together, don't commit
+# (the .cer shipped to users comes from the release zip, not source control)
 *.pfx
+*.cer
 
 # Generated icon/logo artifacts — reproducible from tools/generate-icons.py, not source
 tools/out/

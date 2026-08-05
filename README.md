@@ -87,15 +87,28 @@ tests/
 
 ## Download
 
-A prebuilt, unsigned MSIX package is available on the [Releases](../../releases) page —
-no build tools required. Since this isn't a Store-signed build, Windows needs to trust
-it first:
+A prebuilt MSIX package is available on the [Releases](../../releases) page — no build
+tools required. It's signed with a self-signed dev certificate rather than a Store or
+EV certificate, so Windows needs to trust that certificate before it will install:
 
-1. Unzip the release download.
-2. Enable **Settings → Privacy & security → For developers → Developer Mode** (or just
-   run `Add-AppDevPackage.ps1` from the zip — it will prompt you through enabling
-   sideloading if needed).
-3. Right-click `Add-AppDevPackage.ps1` → **Run with PowerShell**, and follow the prompts.
+1. Unzip the release download. The zip includes the MSIX, a matching `.cer` (the
+   public half of the signing certificate), `Add-AppDevPackage.ps1`, and
+   `Remove-AppDevPackage.ps1`.
+2. Right-click `Add-AppDevPackage.ps1` → **Run with PowerShell**. It will prompt for
+   an admin elevation to install the `.cer` into the local machine's trusted people
+   store, then install the MSIX — accept both prompts.
+3. If script execution is blocked, enable **Settings → Privacy & security → For
+   developers → Developer Mode** first, then re-run the script.
+
+Because this is a self-signed certificate — not something Microsoft or a public CA
+vouches for — Windows/SmartScreen will still warn that the publisher is unverified.
+That's expected for a pre-release, non-Store build; it isn't a sign of tampering.
+
+**Uninstalling:** removing the app (Settings → Apps, or `Remove-AppxPackage`) does
+*not* remove the trusted certificate — it stays trusted indefinitely unless you
+remove it yourself. If you'd rather not leave it behind, right-click
+`Remove-AppDevPackage.ps1` (same zip) → **Run with PowerShell** — it uninstalls
+Scanstack and removes the certificate from Trusted People in one step.
 
 ## Building from source
 
