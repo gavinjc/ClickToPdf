@@ -347,6 +347,22 @@ here so the architecture doesn't preclude them.
    - Failure mode either way is soft: a hard-tail page just ends up with no/partial searchable
      text, never a crash or blocked output — so MVP-first, harden-later is a legitimate way to
      ship this rather than an all-or-nothing gate.
+   - **In-app disclaimer shipped 2026-08-24:** the "Make searchable (OCR)" checkbox carries an
+     asterisk (`SearchableCheckBox.Content`, `Strings/en-us/Resources.resw`) pointing at a fixed
+     disclaimer line under the Options panel (`OcrHandwritingDisclaimer`): "OCR recognizes
+     printed text only — handwriting isn't supported and may produce garbled or no searchable
+     text." **TODO before store submission:** the same disclaimer still needs to reach the Store
+     listing copy (`docs/store/listing.md`, near the "Make the PDF searchable" bullet).
+   - **Real finding, worth keeping:** a *post-save* "some pages weren't recognized" warning was
+     attempted and reverted the same day. `Windows.Media.Ocr` does not fail cleanly on
+     handwriting — confirmed by running it against a real 10-page handwritten scan and
+     inspecting the embedded text via `pdftotext`: it returned confident, plausible-looking
+     garbage (`cyo rccecLwc/`, `CJN`, `SbUS(z`, ...) rather than an empty result, so a
+     "zero words recognized" per-page heuristic never fires for the actual common case. The
+     WinRT OCR API also exposes no per-word/line confidence score to build a better heuristic
+     from. A static, always-shown disclaimer (above) is deliberately preferred over detection
+     that cannot reliably detect the failure it's meant to catch — don't re-attempt a
+     post-save "OCR outcome" heuristic without a genuinely new signal to build it from.
 2. **Deskew** *(implemented)* **/ auto-crop** *(still deferred)* — high value for flatbed
    scans. Deskew reuses the `Searchable` feature's `Windows.Media.Ocr` call: `OcrResult.TextAngle`
    (clockwise degrees, verified against Microsoft's docs) is folded straight into the existing

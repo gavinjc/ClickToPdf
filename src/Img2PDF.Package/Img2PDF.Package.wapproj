@@ -63,7 +63,6 @@
     </ProjectReference>
     <ProjectReference Include="..\Img2PDF.ShellExtension\Img2PDF.ShellExtension.vcxproj">
       <Project>{9F1B7E3A-9C2E-4C7E-8B7B-2E2F6B6C9A11}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />

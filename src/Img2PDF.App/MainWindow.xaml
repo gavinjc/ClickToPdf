@@ -7,7 +7,7 @@
 
     <Grid
         x:Name="RootGrid"
-        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+        Background="{ThemeResource AppCanvasBackgroundBrush}"
         AllowDrop="True"
         DragOver="RootGrid_DragOver"
         Drop="RootGrid_Drop">
@@ -56,24 +56,24 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                    <TextBlock Text="Zoom" VerticalAlignment="Center"/>
+                    <TextBlock x:Uid="ZoomLabel" VerticalAlignment="Center"/>
                     <Slider x:Name="ZoomSlider" Minimum="120" Maximum="400" Value="200" Width="200"/>
                     <Button
-                        Content="Undo"
+                        x:Uid="UndoButton"
                         Click="UndoButton_Click"
-                        ToolTipService.ToolTip="Undo the last change"
-                        AutomationProperties.Name="Undo"/>
+                        Background="{ThemeResource AppToolbarButtonBackgroundBrush}"
+                        BorderBrush="{ThemeResource AppToolbarButtonBorderBrush}"/>
                     <SplitButton
-                        Content="Sort"
-                        ToolTipService.ToolTip="Change page order"
-                        AutomationProperties.Name="Sort">
+                        x:Uid="SortButton"
+                        Background="{ThemeResource AppToolbarButtonBackgroundBrush}"
+                        BorderBrush="{ThemeResource AppToolbarButtonBorderBrush}">
                         <SplitButton.Flyout>
                             <MenuFlyout Placement="Bottom">
-                                <MenuFlyoutItem Text="Name (natural)" Click="SortByName_Click"/>
-                                <MenuFlyoutItem Text="Date taken" Click="SortByDateTaken_Click"/>
-                                <MenuFlyoutItem Text="Date modified" Click="SortByDateModified_Click"/>
+                                <MenuFlyoutItem x:Uid="SortByNameItem" Click="SortByName_Click"/>
+                                <MenuFlyoutItem x:Uid="SortByDateTakenItem" Click="SortByDateTaken_Click"/>
+                                <MenuFlyoutItem x:Uid="SortByDateModifiedItem" Click="SortByDateModified_Click"/>
                                 <MenuFlyoutSeparator/>
-                                <MenuFlyoutItem Text="Reverse current" Click="ReverseOrder_Click"/>
+                                <MenuFlyoutItem x:Uid="ReverseOrderItem" Click="ReverseOrder_Click"/>
                             </MenuFlyout>
                         </SplitButton.Flyout>
                     </SplitButton>
@@ -83,65 +83,110 @@
                     <TextBlock
                         VerticalAlignment="Center"
                         Text="{Binding Pages.Count, Converter={StaticResource PageCount}}"/>
-                    <Button Content="Save" Style="{StaticResource AccentButtonStyle}" Click="SaveButton_Click"/>
+                    <Button x:Uid="SaveButton" Style="{StaticResource AccentButtonStyle}" Click="SaveButton_Click"/>
                     <Button
+                        x:Uid="AboutButton"
                         Style="{StaticResource IconButtonStyle}"
-                        Click="AboutButton_Click"
-                        ToolTipService.ToolTip="About Scanstack"
-                        AutomationProperties.Name="About Scanstack">
+                        Click="AboutButton_Click">
                         <FontIcon Glyph="&#xE946;" FontSize="16"/>
                     </Button>
                 </StackPanel>
             </Grid>
 
-            <Expander Grid.Row="1" Header="Options" IsExpanded="False" Margin="12,0,12,8"
-                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                <StackPanel Orientation="Horizontal" Spacing="16" Padding="8">
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="Page size"/>
-                        <ComboBox x:Name="PageSizeCombo" SelectedIndex="0" SelectionChanged="PageSizeCombo_SelectionChanged">
-                            <ComboBoxItem Content="A4"/>
-                            <ComboBoxItem Content="Letter"/>
-                            <ComboBoxItem Content="Match image"/>
-                        </ComboBox>
+            <!-- Hand-rolled instead of Expander: Expander's header/body chrome comes from
+                 ExpanderHeaderBackground/ExpanderContentBackground theme-resource keys, which
+                 default to two *different* system brushes (CardBackgroundFillColorDefaultBrush vs
+                 CardBackgroundFillColorSecondaryBrush) — overriding those keys in App.xaml had no
+                 visible effect (their exact names apparently don't match this WindowsAppSDK build;
+                 its XAML source isn't shipped locally to verify against, unlike ComboBox's, which
+                 hit the same silent-no-op problem and got the same fix). Button and Border are both
+                 confirmed to honor an instance-level Background/BorderBrush, so this guarantees the
+                 header and body are the literal same brush rather than hoping two resource keys
+                 happen to agree. Costs the built-in expand/collapse animation. -->
+            <StackPanel Grid.Row="1" Margin="12,0,12,8">
+                <Button
+                    x:Name="OptionsHeaderButton"
+                    Click="OptionsHeaderButton_Click"
+                    Background="{ThemeResource AppPanelBackgroundBrush}"
+                    BorderBrush="{ThemeResource AppPanelBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4,4,0,0"
+                    Padding="12,10"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Uid="OptionsHeaderText" VerticalAlignment="Center"/>
+                        <FontIcon x:Name="OptionsHeaderChevron" Grid.Column="1" Glyph="&#xE70D;" FontSize="12" VerticalAlignment="Center"/>
+                    </Grid>
+                </Button>
+                <Border
+                    x:Name="OptionsBody"
+                    Background="{ThemeResource AppPanelBackgroundBrush}"
+                    BorderBrush="{ThemeResource AppPanelBorderBrush}"
+                    BorderThickness="1,0,1,1"
+                    CornerRadius="0,0,4,4"
+                    Visibility="Collapsed">
+                    <StackPanel Spacing="8" Padding="8">
+                        <StackPanel Orientation="Horizontal" Spacing="16">
+                            <StackPanel Spacing="4">
+                                <TextBlock x:Uid="PageSizeLabel"/>
+                                <ComboBox x:Name="PageSizeCombo" SelectedIndex="0" SelectionChanged="PageSizeCombo_SelectionChanged">
+                                    <ComboBoxItem x:Uid="PageSizeA4Item" Tag="A4"/>
+                                    <ComboBoxItem x:Uid="PageSizeLetterItem" Tag="Letter"/>
+                                    <ComboBoxItem x:Uid="PageSizeMatchImageItem" Tag="MatchImage"/>
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel Spacing="4">
+                                <TextBlock x:Uid="MarginsLabel"/>
+                                <ComboBox x:Name="MarginsCombo" SelectedIndex="0" SelectionChanged="MarginsCombo_SelectionChanged">
+                                    <ComboBoxItem x:Uid="MarginsNoneItem" Tag="None"/>
+                                    <ComboBoxItem x:Uid="MarginsNarrowItem" Tag="Narrow"/>
+                                    <ComboBoxItem x:Uid="MarginsStandardItem" Tag="Standard"/>
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel Spacing="4">
+                                <TextBlock x:Uid="OrientationLabel"/>
+                                <ComboBox x:Name="OrientationCombo" SelectedIndex="0" SelectionChanged="OrientationCombo_SelectionChanged">
+                                    <ComboBoxItem x:Uid="OrientationAutoItem" Tag="Auto"/>
+                                    <ComboBoxItem x:Uid="OrientationPortraitItem" Tag="ForcePortrait"/>
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel Spacing="4">
+                                <TextBlock x:Uid="QualityLabel"/>
+                                <ComboBox x:Name="QualityCombo" SelectedIndex="0" SelectionChanged="QualityCombo_SelectionChanged">
+                                    <ComboBoxItem x:Uid="QualityOriginalItem" Tag="Original"/>
+                                    <ComboBoxItem x:Uid="QualityHighItem" Tag="High"/>
+                                    <ComboBoxItem x:Uid="QualityMediumItem" Tag="Medium"/>
+                                    <ComboBoxItem x:Uid="QualitySmallItem" Tag="Small"/>
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel Spacing="4" VerticalAlignment="Bottom">
+                                <CheckBox x:Uid="GreyscaleCheckBox" IsChecked="{Binding Greyscale, Mode=TwoWay}"/>
+                                <CheckBox
+                                    x:Uid="SearchableCheckBox"
+                                    IsChecked="{Binding Searchable, Mode=TwoWay}"/>
+                                <CheckBox
+                                    x:Uid="DeskewCheckBox"
+                                    IsChecked="{Binding Deskew, Mode=TwoWay}"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <!-- Static, not detected: Windows.Media.Ocr doesn't fail cleanly on
+                             handwriting — it returns confidently wrong text rather than an empty
+                             result, so there's no reliable per-save signal to build a "some pages
+                             weren't recognized" warning from (confirmed by inspecting real OCR'd
+                             output against a handwritten test scan). A fixed disclaimer here is
+                             the honest option instead of detection that can't actually detect it. -->
+                        <TextBlock
+                            x:Uid="OcrHandwritingDisclaimer"
+                            FontSize="11"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                     </StackPanel>
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="Margins"/>
-                        <ComboBox x:Name="MarginsCombo" SelectedIndex="0" SelectionChanged="MarginsCombo_SelectionChanged">
-                            <ComboBoxItem Content="None"/>
-                            <ComboBoxItem Content="Narrow (5 mm)"/>
-                            <ComboBoxItem Content="Standard (10 mm)"/>
-                        </ComboBox>
-                    </StackPanel>
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="Orientation"/>
-                        <ComboBox x:Name="OrientationCombo" SelectedIndex="0" SelectionChanged="OrientationCombo_SelectionChanged">
-                            <ComboBoxItem Content="Auto per page"/>
-                            <ComboBoxItem Content="Force portrait"/>
-                        </ComboBox>
-                    </StackPanel>
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="Quality"/>
-                        <ComboBox x:Name="QualityCombo" SelectedIndex="0" SelectionChanged="QualityCombo_SelectionChanged">
-                            <ComboBoxItem Content="Original"/>
-                            <ComboBoxItem Content="High (300 DPI)"/>
-                            <ComboBoxItem Content="Medium (200 DPI)"/>
-                            <ComboBoxItem Content="Small (150 DPI)"/>
-                        </ComboBox>
-                    </StackPanel>
-                    <StackPanel Spacing="4" VerticalAlignment="Bottom">
-                        <CheckBox Content="Greyscale" IsChecked="{Binding Greyscale, Mode=TwoWay}"/>
-                        <CheckBox
-                            Content="Make searchable (OCR)"
-                            IsChecked="{Binding Searchable, Mode=TwoWay}"
-                            ToolTipService.ToolTip="Adds an invisible, searchable text layer. Works best on clean printed text; increases save time."/>
-                        <CheckBox
-                            Content="Auto-deskew"
-                            IsChecked="{Binding Deskew, Mode=TwoWay}"
-                            ToolTipService.ToolTip="Straightens pages scanned in slightly crooked. Only helps pages with real printed text, and adds the same OCR cost as Make searchable."/>
-                    </StackPanel>
-                </StackPanel>
-            </Expander>
+                </Border>
+            </StackPanel>
 
             <StackPanel
                 x:Name="SaveProgressPanel"
@@ -151,7 +196,7 @@
                 Padding="12,0,12,8"
                 Visibility="Collapsed">
                 <ProgressBar x:Name="SaveProgressBar" Width="300" Minimum="0"/>
-                <Button x:Name="CancelSaveButton" Content="Cancel" Click="CancelSaveButton_Click"/>
+                <Button x:Name="CancelSaveButton" x:Uid="CancelSaveButton" Click="CancelSaveButton_Click"/>
             </StackPanel>
 
             <StackPanel
@@ -162,13 +207,12 @@
                 Spacing="12"
                 Visibility="{Binding ShowEmptyState, Converter={StaticResource BoolToVisibility}}">
                 <FontIcon Glyph="&#xE8B9;" FontSize="48" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
-                <TextBlock Text="Drop images here, or" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
+                <TextBlock x:Uid="EmptyStateText" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
                 <Button
-                    Content="Choose images…"
+                    x:Uid="ChooseImagesButton"
                     Click="ChooseImagesButton_Click"
                     Style="{StaticResource AccentButtonStyle}"
-                    HorizontalAlignment="Center"
-                    AutomationProperties.Name="Choose images"/>
+                    HorizontalAlignment="Center"/>
             </StackPanel>
 
             <GridView
@@ -244,8 +288,8 @@
                             PointerExited="Tile_PointerExited">
 
                             <Border
-                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                Background="{ThemeResource AppTileBackgroundBrush}"
+                                BorderBrush="{ThemeResource AppTileBorderBrush}"
                                 BorderThickness="1"
                                 CornerRadius="4">
                                 <Grid>
@@ -255,21 +299,25 @@
                                     </Grid.RowDefinitions>
 
                                     <Grid Grid.Row="0">
-                                        <Image
-                                            Source="{x:Bind ThumbnailSource, Mode=OneWay}"
-                                            Stretch="Uniform"
-                                            RenderTransformOrigin="0.5,0.5">
-                                            <Image.RenderTransform>
-                                                <RotateTransform Angle="{x:Bind RotationDegrees, Mode=OneWay}"/>
-                                            </Image.RenderTransform>
-                                        </Image>
+                                        <!-- Hairline so the page doesn't butt straight against the tile background —
+                                             most of the fix for dark-theme glare (brief §4). -->
+                                        <Border BorderBrush="{ThemeResource AppPageEdgeBrush}" BorderThickness="1">
+                                            <Image
+                                                Source="{x:Bind ThumbnailSource, Mode=OneWay}"
+                                                Stretch="Uniform"
+                                                RenderTransformOrigin="0.5,0.5">
+                                                <Image.RenderTransform>
+                                                    <RotateTransform Angle="{x:Bind RotationDegrees, Mode=OneWay}"/>
+                                                </Image.RenderTransform>
+                                            </Image>
+                                        </Border>
 
                                         <!-- Plain text, not ProgressRing: ProgressRing.IsActive crashed
                                              natively (Microsoft.UI.Xaml.dll, 0xc000027b) inside this
                                              virtualized GridView item template — confirmed via
                                              bisection, see project memory (winui-native-crash-notes). -->
                                         <TextBlock
-                                            Text="Loading…"
+                                            x:Uid="LoadingText"
                                             Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}"
                                             HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
@@ -279,7 +327,7 @@
                                             HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="4">
                                             <FontIcon Glyph="&#xE783;" FontSize="24"
                                                       Foreground="{ThemeResource SystemFillColorCriticalBrush}"/>
-                                            <TextBlock Text="Can't load" FontSize="11" HorizontalAlignment="Center"/>
+                                            <TextBlock x:Uid="CantLoadText" FontSize="11" HorizontalAlignment="Center"/>
                                         </StackPanel>
                                     </Grid>
 
@@ -323,19 +371,13 @@
                                             Padding="2"
                                             Opacity="0.55">
                                             <StackPanel Orientation="Horizontal" Spacing="0">
-                                                <Button Style="{StaticResource IconButtonStyle}" Tag="{x:Bind}" Click="PreviewButton_Click"
-                                                        ToolTipService.ToolTip="Preview page"
-                                                        AutomationProperties.Name="Preview page">
+                                                <Button x:Uid="PreviewPageButton" Style="{StaticResource IconButtonStyle}" Tag="{x:Bind}" Click="PreviewButton_Click">
                                                     <FontIcon Glyph="&#xE71E;" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
                                                 </Button>
-                                                <Button Style="{StaticResource IconButtonStyle}" Tag="{x:Bind}" Click="RotateButton_Click"
-                                                        ToolTipService.ToolTip="Rotate right"
-                                                        AutomationProperties.Name="Rotate right">
+                                                <Button x:Uid="TileRotateButton" Style="{StaticResource IconButtonStyle}" Tag="{x:Bind}" Click="RotateButton_Click">
                                                     <FontIcon Glyph="&#xE7AD;" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
                                                 </Button>
-                                                <Button Style="{StaticResource IconButtonStyle}" Tag="{x:Bind}" Click="RemoveButton_Click"
-                                                        ToolTipService.ToolTip="Remove from document"
-                                                        AutomationProperties.Name="Remove from document">
+                                                <Button x:Uid="TileRemoveButton" Style="{StaticResource IconButtonStyle}" Tag="{x:Bind}" Click="RemoveButton_Click">
                                                     <FontIcon Glyph="&#xE711;" FontSize="14" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
                                                 </Button>
                                             </StackPanel>
@@ -380,22 +422,22 @@
         <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Margin="12,8" Spacing="8">
             <InfoBar
                 x:Name="SkippedFilesInfoBar"
+                x:Uid="SkippedFilesInfoBar"
                 Severity="Warning"
-                Title="Some items were skipped"
                 Message="{x:Bind ViewModel.SkippedFilesMessage, Mode=OneWay}"
                 IsOpen="{x:Bind ViewModel.HasSkippedFiles, Mode=OneWay}"
                 IsClosable="True"/>
 
             <InfoBar
                 x:Name="SaveSuccessInfoBar"
+                x:Uid="SaveSuccessInfoBar"
                 Severity="Success"
-                Title="Saved"
                 IsOpen="False"
                 IsClosable="True">
                 <InfoBar.Content>
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button Content="Open" Click="OpenSavedFile_Click"/>
-                        <Button Content="Show in folder" Click="ShowSavedFileInFolder_Click"/>
+                        <Button x:Uid="OpenSavedFileButton" Click="OpenSavedFile_Click"/>
+                        <Button x:Uid="ShowInFolderButton" Click="ShowSavedFileInFolder_Click"/>
                     </StackPanel>
                 </InfoBar.Content>
             </InfoBar>
@@ -418,6 +460,7 @@
              at least one page, so images can still be added to a set the shell extension already
              launched with (drag-and-drop onto RootGrid does the same, in both states). -->
         <Button
+            x:Uid="AddMoreButton"
             Style="{StaticResource AccentButtonStyle}"
             Click="AddMoreButton_Click"
             HorizontalAlignment="Right"
@@ -425,9 +468,7 @@
             Margin="24"
             Padding="14"
             CornerRadius="24"
-            Visibility="{Binding ShowEmptyState, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}"
-            ToolTipService.ToolTip="Add more images"
-            AutomationProperties.Name="Add more images">
+            Visibility="{Binding ShowEmptyState, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
             <FontIcon Glyph="&#xE710;" FontSize="18"/>
         </Button>
 
@@ -443,22 +484,20 @@
             </Image>
 
             <Button
+                x:Uid="PreviewCloseButton"
                 Style="{StaticResource IconButtonStyle}"
                 HorizontalAlignment="Right" VerticalAlignment="Top" Margin="16"
                 Click="PreviewCloseButton_Click"
-                Tapped="StopTappedPropagation"
-                ToolTipService.ToolTip="Close preview"
-                AutomationProperties.Name="Close preview">
+                Tapped="StopTappedPropagation">
                 <FontIcon Glyph="&#xE711;" FontSize="18" Foreground="White"/>
             </Button>
 
             <Button
+                x:Uid="PreviewRotateButton"
                 Style="{StaticResource IconButtonStyle}"
                 HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="24"
                 Click="PreviewRotateButton_Click"
-                Tapped="StopTappedPropagation"
-                ToolTipService.ToolTip="Rotate right"
-                AutomationProperties.Name="Rotate right">
+                Tapped="StopTappedPropagation">
                 <FontIcon Glyph="&#xE7AD;" FontSize="18" Foreground="White"/>
             </Button>
 
@@ -474,16 +513,25 @@
              rather than anything sourced from a converter or resource. -->
         <ContentDialog
             x:Name="AboutDialog"
-            Title="About Scanstack"
-            CloseButtonText="Close"
+            x:Uid="AboutDialog"
             DefaultButton="Close">
             <ScrollViewer MaxHeight="400" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel Spacing="12" Width="420">
                     <TextBlock TextWrapping="Wrap">
                         <Run x:Name="AppVersionText"/>
                         <LineBreak/>
-                        Combine images into a single PDF from File Explorer.
+                        <Run x:Name="AppDescriptionRun"/>
                     </TextBlock>
+
+                    <!-- Local-only diagnostics — nothing here is ever sent anywhere (see privacy
+                         policy). Just gives a user hitting a bug something to hand to support
+                         instead of "it just closed". -->
+                    <TextBlock x:Uid="DiagnosticsHeading" FontWeight="SemiBold"/>
+                    <StackPanel Spacing="8">
+                        <Button x:Uid="CopyDiagnosticInfoButton" Style="{StaticResource AccentButtonStyle}" Click="CopyDiagnosticInfoButton_Click" HorizontalAlignment="Stretch"/>
+                        <Button x:Uid="OpenLogsFolderButton" Style="{StaticResource AccentButtonStyle}" Click="OpenLogsFolderButton_Click" HorizontalAlignment="Stretch"/>
+                        <Button x:Uid="ReportProblemButton" Style="{StaticResource AccentButtonStyle}" Click="ReportProblemButton_Click" HorizontalAlignment="Stretch"/>
+                    </StackPanel>
 
                     <TextBlock Text="Third-party software" FontWeight="SemiBold"/>
                     <TextBlock TextWrapping="Wrap" FontSize="12">

@@ -14,6 +14,26 @@ batch all five sections and build once.
 
 ---
 
+## Status as of 2026-08-20
+
+Most of this brief has been implemented. Verified against `MainWindow.xaml` (now 520 lines)
+by inspection, not by running the app:
+
+| Section | State |
+|---|---|
+| 1 — invisible selection | Done, `IsSelected` present |
+| 2 — filename escapes tile | Done |
+| 3 — tile chrome, tooltips, undo | Done; buttons in the card footer, 12 tooltips, 10 automation names, Undo in the toolbar |
+| 4 — theming | **Superseded — rewritten below.** The hardcoded-colour cleanup is done; the surface palette is the remaining work |
+| 5 — preview overlay | Close, rotate and page indicator present, with `StopTappedPropagation` on each. **Could not verify `←`/`→` stepping** — it would live in code-behind; confirm it exists |
+| 6 — toolbar polish | Done; `AccentButtonStyle`, page count, `HorizontalAlignment="Stretch"` on the `Expander` |
+| 8 — empty state, sort | Done; `EmptyStatePanel` and the sort split-button both landed in 0.5.6 |
+
+Only four hardcoded colours remain, all inside `PreviewOverlay` — that is deliberate and
+correct, see §4.
+
+---
+
 ## 1. Selection is invisible — fix first
 
 `TileContainerStyle` (line 126) replaces `GridViewItem`'s control template with a bare
@@ -115,32 +135,119 @@ the more likely mistake.
 
 ---
 
-## 4. Theming and colour
+## 4. Surface palette and the unified options panel
 
-**The app is effectively dark-only.** Every colour decision in the file is hardcoded:
-`#AA000000` on the icon buttons (line 145) and the filename bar (line 237),
-`Foreground="White"` on the icons, badge text and filename, and `Foreground="Red"` on the
-error text (line 53). WinUI follows the system theme by default, so a user — or a Store
-certification tester, who is likely on stock light Windows — gets black chips and
-white-on-white icons.
+Rewritten 2026-08-20. The original §4 — replacing hardcoded colours with theme resources —
+is done. What follows is a separate problem, agreed after reviewing the running app in both
+themes.
 
-**Do:**
+### The problem
 
-- Replace every hardcoded colour with a theme resource. `Foreground="Red"` →
-  `SystemFillColorCriticalBrush`. Icon and filename scrims → a theme-aware smoke or acrylic
-  brush. Icon foregrounds → `TextOnAccentFillColorPrimaryBrush` or
-  `TextFillColorPrimaryBrush` depending on the final scrim.
-- The page badge uses raw `SystemAccentColor` with `Foreground="White"` (line 213). Raw
-  accent is oversaturated on dark backgrounds, and white text fails outright if the user's
-  accent is pale — a yellow accent gives white-on-yellow. Use
-  `AccentFillColorDefaultBrush` with `TextOnAccentFillColorPrimaryBrush`.
-- `RootGrid` (line 8) sets no background, so the window renders near-black. White scanned
-  pages against near-black is maximum contrast and the pages glare. Set
-  `ApplicationPageBackgroundThemeBrush`, or enable Mica via `SystemBackdrop` on the Window
-  for a properly native surface. This single change does most of the visual work.
+Two distinct faults, both dark-theme only. Light theme is close to right and must not become
+collateral damage.
 
-**Test both themes before calling this done.** Switch Windows to light mode and re-check
-every tile state: loading, loaded, error, selected, hovered.
+**The surface ladder is compressed.** `RootGrid` uses
+`ApplicationPageBackgroundThemeBrush` and the tile card uses
+`CardBackgroundFillColorDefaultBrush` (line 247), which in dark theme is roughly 5% white
+over the base. The window background, the Options panel and the tile card therefore land
+within a few percent of each other, and the whole screen reads as flat and murky.
+
+**The pages glare.** A white scan on a near-black background is the maximum contrast the
+display can produce, so the thumbnails burn and the surrounding UI disappears. In light
+theme the same page sits on a near-white card and blends in, which is why light theme looks
+fine and dark theme does not.
+
+### Decision
+
+Explicit named brushes, per theme, with the ladder deliberately widened at *both* ends — the
+background goes darker as the cards go lighter. That matters: dropping the background from
+`#1C1C1C` to `#141414` buys as much apparent separation as lifting the card does, and costs
+nothing in glare because the background carries no content.
+
+| Role | Dark | Light |
+|---|---|---|
+| Window / canvas background | `#141414` | `#F3F3F3` |
+| Options panel, header **and** body | `#2F2F2F` | `#FFFFFF` |
+| Options panel border | `#474747` | `#E0E0E0` |
+| Controls inside the panel | `#3A3A3A`, border `#565656` | `#F6F6F6`, border `#DDDDDD` |
+| Toolbar buttons | `#2E2E2E`, border `#4A4A4A` | framework default |
+| Tile card | `#3B3B3B`, border `#545454` | `#FFFFFF`, border `#E0E0E0` |
+| Tile card, selected | 2px accent border | 2px accent border |
+| Page image hairline | `#606060` | `#DCDCE0` |
+| Text primary / secondary | `#F0F0F0` / `#D6D6D6` | framework default |
+
+The borders are load-bearing, not decorative. `#2F` panel against `#3B` card is a 12-point
+gap, comfortable on a good monitor but liable to converge on a dim or low-contrast display;
+the 1px borders are what hold the separation when the fills stop doing it. Do not drop them
+in favour of fill contrast alone.
+
+The page hairline is the other quiet essential — it stops the white image butting directly
+against the card and is most of why the glare subsides.
+
+### Mechanism
+
+`App.xaml` currently has only `MergedDictionaries` and no `ThemeDictionaries`. Add them, and
+define the palette as named brushes there rather than inline in `MainWindow.xaml`. That keeps
+light and dark independent, and gives one place to tune values.
+
+```xml
+<ResourceDictionary>
+    <ResourceDictionary.MergedDictionaries>
+        <!-- existing XamlControlsResources -->
+    </ResourceDictionary.MergedDictionaries>
+
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Dark">
+            <SolidColorBrush x:Key="AppCanvasBackgroundBrush" Color="#141414"/>
+            <SolidColorBrush x:Key="AppPanelBackgroundBrush"  Color="#2F2F2F"/>
+            <SolidColorBrush x:Key="AppPanelBorderBrush"      Color="#474747"/>
+            <SolidColorBrush x:Key="AppTileBackgroundBrush"   Color="#3B3B3B"/>
+            <SolidColorBrush x:Key="AppTileBorderBrush"       Color="#545454"/>
+            <SolidColorBrush x:Key="AppPageEdgeBrush"         Color="#606060"/>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+            <!-- light column from the table above -->
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>
+```
+
+Then consume with `{ThemeResource AppTileBackgroundBrush}` and friends. `RootGrid` moves from
+`ApplicationPageBackgroundThemeBrush` to `AppCanvasBackgroundBrush`; the tile card at line 247
+moves from `CardBackgroundFillColorDefaultBrush` to `AppTileBackgroundBrush`.
+
+**Gotcha:** overrides of *framework* theme resources (the `Expander*` keys below) must also
+live inside these `ThemeDictionaries`. Defining them as plain App-level resources applies one
+value to both themes, which is exactly the bug this section exists to avoid.
+
+### Unified options panel
+
+`Expander` paints its header and its content with different brushes and puts a divider
+between them, which is why the Options section currently reads as a lid on a box rather than
+one panel. Override so header and body are a single continuous surface, in both themes:
+
+- `ExpanderHeaderBackground` and `ExpanderContentBackground` → `AppPanelBackgroundBrush`
+- `ExpanderHeaderBorderThickness` → `0`, dropping the internal divider
+- `ExpanderHeaderBorderBrush` and `ExpanderContentBorderBrush` → `AppPanelBorderBrush`
+
+Verify those key names against `generic.xaml` for the installed Windows App SDK before
+relying on them — `Expander`'s resource keys have shifted between releases, and a misspelled
+key fails silently rather than erroring, which is a nasty way to lose an hour.
+
+### Deliberate exception
+
+`PreviewOverlay` keeps its hardcoded `#CC000000` scrim and `Foreground="White"` glyphs. A dim
+scrim with white controls over a full-bleed photograph is correct in both themes — the
+overlay is not a themed surface, it is a darkroom. Do not "fix" these four values.
+
+### Re-check afterwards
+
+- The floating add button and the info glyph both sit on the canvas; confirm their contrast
+  against `#141414` rather than the old background.
+- The selected-tile accent border at 120px zoom, where the card is mostly border.
+- Secondary text on the lighter `#3B3B3B` card — `#D6D6D6` is the intended value; anything
+  around `#A8A8A8` will be too dim once the card lifts.
+- Light theme, every tile state, before calling this done.
 
 ---
 
@@ -201,15 +308,16 @@ Recorded so these are not helpfully reintroduced:
 
 ---
 
-## 8. Also outstanding, out of scope for this brief
+## 8. Spec §4.2 gaps — both closed
 
-Both are spec §4.2 gaps, tracked in `docs/store/submission-checklist.md` §5:
+Kept for history; nothing to do. Both landed in 0.5.6 and are recorded in
+`docs/store/submission-checklist.md` §5.
 
-- **No-argument launch has no empty state.** Spec requires a "Choose images…" button.
-  `AllowDrop` is set but there is no empty-state UI. This is a Store submission risk — a
-  certification tester's first action is launching from the Start menu, as is WACK's launch
-  test. Worth fixing before submission, but it is a separate piece of work.
-- **No Sort split-button**, and no settings persistence anywhere in `Img2PDF.App`.
+- **No-argument launch empty state** — `EmptyStatePanel` with a "Choose images…" button, plus
+  drag-and-drop onto `RootGrid`. This had been a Store submission risk, since a certification
+  tester's first action is launching from the Start menu, as is WACK's launch test.
+- **Sort split-button and settings persistence** — both implemented, backed by
+  `State/AppSettings`.
 
 ---
 

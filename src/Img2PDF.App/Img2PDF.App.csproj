@@ -21,7 +21,7 @@
     <!-- Covers the .exe's own Explorer icon (and the unpackaged dev-loop's taskbar icon).
          Does NOT cover the running window's titlebar/taskbar icon while packaged — that
          needs an explicit AppWindow.SetIcon() call at runtime, see MainWindow.xaml.cs. -->
-    <ApplicationIcon>Assets\Scanstack.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\ClickToPdf.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,9 +38,16 @@
     <!-- Copied to the output/publish directory so AppWindow.SetIcon() can load it by a
          relative path at runtime — ApplicationIcon above only embeds it as the .exe's own
          Win32 resource, it doesn't put a loadable file next to the binary. -->
-    <Content Include="Assets\Scanstack.ico">
+    <Content Include="Assets\ClickToPdf.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Not auto-included by the SDK's default item globs despite EnableDefaultItems being on
+         (a known .NET SDK / WinAppSDK gap) — without this, .resw files build but never get
+         indexed into the app's .pri, so every x:Uid/ResourceLoader lookup silently misses. -->
+    <PRIResource Include="Strings\**\*.resw" />
   </ItemGroup>
 
 </Project>

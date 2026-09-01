@@ -1,15 +1,14 @@
-# Scanstack
+# ClickTo: PDF
 
 A Windows utility that turns a folder of scanned images into a single PDF, in about
 three clicks. Select images in File Explorer, right-click, **Combine to PDF**, drag the
 pages into order, save.
 
-> Portfolio copy of a private project. See [License](#license) below — this repo is
-> shared to demonstrate the work, not for reuse.
+> Portfolio snapshot of a shipped project — see [License](#license). The maintained
+> source lives at [The-Bureau-of-Stuff/Img2PDF](https://github.com/The-Bureau-of-Stuff/Img2PDF)
+> (public, MIT); this copy is a point-in-time mirror and won't track every future change.
 
-**Pre-release software.** Scanstack is still under active development and has not
-been publicly released (a free Microsoft Store listing is planned). Expect rough
-edges, missing polish, and breaking changes between versions.
+**Published on the Microsoft Store**, v1.0.0.
 
 ## Screenshots
 
@@ -36,7 +35,7 @@ edges, missing polish, and breaking changes between versions.
 Windows' built-in "Print to PDF" locks page order to filename order, crops full-page
 photos, and letterboxes landscape scans. Full PDF editors can merge images, but their
 quick-merge dialogs list filenames only — no help when files are named
-`IMG_0043.jpg … IMG_0051.jpg`. Scanstack does the one thing that actually matters: show
+`IMG_0043.jpg … IMG_0051.jpg`. ClickTo: PDF does the one thing that actually matters: show
 the pages, drag them into order, done.
 
 ## Features
@@ -51,6 +50,7 @@ the pages, drag them into order, done.
 - A4 or Letter output, automatic per-page orientation, adjustable margins/quality/greyscale
 - JPEGs are embedded without re-encoding wherever possible — no quality loss, no bloat
 - EXIF orientation honoured; images always scaled to fit, aspect ratio preserved, never cropped
+- Local-only diagnostic logging and an About-dialog "Report a problem" flow — nothing is ever transmitted
 - No account, no telemetry, no network calls — everything happens on-device; source images are opened read-only and never modified
 
 ## Tech stack
@@ -85,30 +85,18 @@ tests/
   Img2PDF.App.Tests/        Settings, natural sort, save-file naming, undo
 ```
 
+Note: the codebase keeps the original `Img2PDF.*` naming throughout (repo, projects,
+namespaces) even after the product itself was renamed to ClickTo: PDF for the Store —
+an intentional internal-codename-vs-brand split, not drift.
+
 ## Download
 
-A prebuilt MSIX package is available on the [Releases](../../releases) page — no build
-tools required. It's signed with a self-signed dev certificate rather than a Store or
-EV certificate, so Windows needs to trust that certificate before it will install:
+**ClickTo: PDF** is free on the Microsoft Store:
 
-1. Unzip the release download. The zip includes the MSIX, a matching `.cer` (the
-   public half of the signing certificate), `Add-AppDevPackage.ps1`, and
-   `Remove-AppDevPackage.ps1`.
-2. Right-click `Add-AppDevPackage.ps1` → **Run with PowerShell**. It will prompt for
-   an admin elevation to install the `.cer` into the local machine's trusted people
-   store, then install the MSIX — accept both prompts.
-3. If script execution is blocked, enable **Settings → Privacy & security → For
-   developers → Developer Mode** first, then re-run the script.
+**[Get it from the Microsoft Store](https://apps.microsoft.com/detail/9NF364X93V6L)**
 
-Because this is a self-signed certificate — not something Microsoft or a public CA
-vouches for — Windows/SmartScreen will still warn that the publisher is unverified.
-That's expected for a pre-release, non-Store build; it isn't a sign of tampering.
-
-**Uninstalling:** removing the app (Settings → Apps, or `Remove-AppxPackage`) does
-*not* remove the trusted certificate — it stays trusted indefinitely unless you
-remove it yourself. If you'd rather not leave it behind, right-click
-`Remove-AppDevPackage.ps1` (same zip) → **Run with PowerShell** — it uninstalls
-Scanstack and removes the certificate from Trusted People in one step.
+It installs and updates through the Store like any other app — no separate download,
+no certificate to trust, signed with a proper Store certificate.
 
 ## Building from source
 
@@ -120,4 +108,6 @@ installable (unsigned) MSIX package.
 ## License
 
 All rights reserved — see [LICENSE](LICENSE). Source is shared here for portfolio
-purposes; no reuse, modification, or redistribution rights are granted.
+purposes; no reuse, modification, or redistribution rights are granted. (The maintained
+original at [The-Bureau-of-Stuff/Img2PDF](https://github.com/The-Bureau-of-Stuff/Img2PDF)
+is MIT-licensed.)

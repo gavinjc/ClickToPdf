@@ -2,11 +2,13 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Runtime.InteropServices.WindowsRuntime;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Img2PDF.App.Diagnostics;
 using Img2PDF.App.State;
 using Img2PDF.Core.Imaging;
 using Img2PDF.Core.Pdf;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.Storage.Streams;
 
 namespace Img2PDF.App.ViewModels;
@@ -25,6 +27,8 @@ public partial class MainViewModel : ObservableObject
     // Image Extensions" — worth a specific message rather than a bare "Can't load" (spec §8 item 7).
     private const int WinCodecErrComponentNotFound = unchecked((int)0x88982F50);
     private static readonly string[] HeifExtensions = { ".heic", ".heif" };
+
+    private static readonly ResourceLoader ResourceLoader = new();
 
     private readonly UndoStack<Action> _undoStack = new(capacity: 20);
     private readonly SemaphoreSlim _thumbnailSemaphore = new(MaxConcurrentThumbnailLoads);
@@ -119,6 +123,7 @@ public partial class MainViewModel : ObservableObject
         }
         catch (Exception ex)
         {
+            AppLog.LogError("LoadFolderAsync", ex);
             ErrorMessage = ex.Message;
             return;
         }
@@ -203,7 +208,8 @@ public partial class MainViewModel : ObservableObject
     {
         HasSkippedFiles = skippedNames.Count > 0;
         SkippedFilesMessage = HasSkippedFiles
-            ? $"{skippedNames.Count} item(s) skipped: {string.Join(", ", skippedNames)}"
+            ? string.Format(
+                ResourceLoader.GetString("SkippedFilesFormat"), skippedNames.Count, string.Join(", ", skippedNames))
             : null;
     }
 
@@ -236,6 +242,7 @@ public partial class MainViewModel : ObservableObject
         }
         catch (Exception ex)
         {
+            AppLog.LogError("LoadPagesAsync", ex);
             ErrorMessage = ex.Message;
         }
         finally
@@ -497,7 +504,10 @@ public partial class MainViewModel : ObservableObject
         catch (Exception ex)
         {
             // Per-tile error state, not a crash (spec acceptance criteria) — corrupt/unreadable
-            // source files shouldn't take down the whole load.
+            // source files shouldn't take down the whole load. Warning, not error: an individual
+            // bad file is expected user-data noise, not an app defect worth treating the same as
+            // an unhandled exception.
+            AppLog.LogWarning("LoadPageAsync", $"{item.FileName}: {ex}");
             string detail = DescribeLoadError(ex, item.SourcePath);
             _dispatcherQueue.TryEnqueue(() =>
             {
@@ -517,8 +527,7 @@ public partial class MainViewModel : ObservableObject
         bool isHeif = HeifExtensions.Contains(Path.GetExtension(sourcePath), StringComparer.OrdinalIgnoreCase);
         if (isHeif && ex.HResult == WinCodecErrComponentNotFound)
         {
-            return "This HEIC photo needs the free \"HEIF Image Extensions\" app from the Microsoft Store " +
-                "to open. Search for it by name in the Store, install it, then reload this file.";
+            return ResourceLoader.GetString("HeicCodecMissingMessage");
         }
 
         return ex.Message;

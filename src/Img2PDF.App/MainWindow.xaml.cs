@@ -1,5 +1,7 @@
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Img2PDF.App.Diagnostics;
 using Img2PDF.App.State;
 using Img2PDF.App.ViewModels;
 using Img2PDF.Core.Imaging;
@@ -10,6 +12,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -22,6 +25,8 @@ namespace Img2PDF.App;
 public sealed partial class MainWindow : Window
 {
     public MainViewModel ViewModel { get; }
+
+    private static readonly ResourceLoader ResourceLoader = new();
 
     private CancellationTokenSource? _saveCts;
     private string? _lastSavedPath;
@@ -54,7 +59,8 @@ public sealed partial class MainWindow : Window
     private MainViewModel InitializeCommon()
     {
         InitializeComponent();
-        Title = "Scanstack";
+        Title = ResourceLoader.GetString("WindowTitle");
+        AppDescriptionRun.Text = ResourceLoader.GetString("AppDescriptionText");
         var viewModel = new MainViewModel(DispatcherQueue);
         RootGrid.DataContext = viewModel;
 
@@ -71,7 +77,17 @@ public sealed partial class MainWindow : Window
         // generic default icon.
         IntPtr hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
         Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hwnd);
-        Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId).SetIcon("Assets\\Scanstack.ico");
+        Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId).SetIcon("Assets\\ClickToPdf.ico");
+
+        // The native titlebar isn't part of the XAML visual tree, so it doesn't pick up the
+        // client area's dark theme on its own — DWM draws it separately and defaults to light
+        // regardless of what ThemeResource the rest of the window resolves to. ActualTheme
+        // already reflects the system app-mode setting (no RequestedTheme override anywhere in
+        // this app), so mirror it into DWM explicitly, and again on ActualThemeChanged in case
+        // the user flips Windows' theme while the app is running.
+        ApplyTitleBarTheme(hwnd, RootGrid.ActualTheme == ElementTheme.Dark);
+        RootGrid.ActualThemeChanged += (sender, _) =>
+            ApplyTitleBarTheme(hwnd, ((FrameworkElement)sender).ActualTheme == ElementTheme.Dark);
 
         AppSettingsData settings = AppSettings.Load();
         ZoomSlider.Value = settings.ZoomValue;
@@ -83,6 +99,17 @@ public sealed partial class MainWindow : Window
         Closed += (_, _) => AppSettings.Save(new AppSettingsData(ZoomSlider.Value, viewModel.CurrentSortOrder));
 
         return viewModel;
+    }
+
+    private const int DwmwaUseImmersiveDarkMode = 20;
+
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int valueSize);
+
+    private static void ApplyTitleBarTheme(IntPtr hwnd, bool useDarkMode)
+    {
+        int value = useDarkMode ? 1 : 0;
+        DwmSetWindowAttribute(hwnd, DwmwaUseImmersiveDarkMode, ref value, sizeof(int));
     }
 
     private void RootGrid_KeyDown(object sender, KeyRoutedEventArgs e)
@@ -130,6 +157,15 @@ public sealed partial class MainWindow : Window
     }
 
     private void UndoButton_Click(object sender, RoutedEventArgs e) => ViewModel.Undo();
+
+    private bool _optionsExpanded;
+
+    private void OptionsHeaderButton_Click(object sender, RoutedEventArgs e)
+    {
+        _optionsExpanded = !_optionsExpanded;
+        OptionsBody.Visibility = _optionsExpanded ? Visibility.Visible : Visibility.Collapsed;
+        OptionsHeaderChevron.Glyph = _optionsExpanded ? "\uE70E" : "\uE70D";
+    }
 
     private void SortByName_Click(object sender, RoutedEventArgs e) => ApplySortAndPersist(SortOrder.NameNatural);
 
@@ -252,7 +288,8 @@ public sealed partial class MainWindow : Window
         }
 
         int index = ViewModel.Pages.IndexOf(_previewItem);
-        PreviewIndicatorText.Text = $"{index + 1} of {ViewModel.Pages.Count}";
+        PreviewIndicatorText.Text = string.Format(
+            ResourceLoader.GetString("PreviewIndicatorFormat"), index + 1, ViewModel.Pages.Count);
     }
 
     private void PreviewOverlay_Tapped(object sender, TappedRoutedEventArgs e) => ClosePreview();
@@ -285,11 +322,18 @@ public sealed partial class MainWindow : Window
     // guard against a null ViewModel rather than relying on ordering. (A NullReferenceException
     // thrown from inside that synchronous callback doesn't surface as a normal managed exception;
     // it escapes through the WinRT/XAML boundary as an unhandled native crash, 0xc000027b.)
+    //
+    // Read via each ComboBoxItem's Tag rather than SelectedIndex — the Tag names the enum member
+    // directly, so reordering or inserting a ComboBoxItem in XAML can't silently desync from the
+    // enum the way a positional index cast could.
+    private static T SelectedOption<T>(ComboBox combo) where T : struct, Enum =>
+        Enum.Parse<T>((string)((ComboBoxItem)combo.SelectedItem).Tag);
+
     private void PageSizeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (ViewModel is not null)
         {
-            ViewModel.PageSize = (PageSizeOption)PageSizeCombo.SelectedIndex;
+            ViewModel.PageSize = SelectedOption<PageSizeOption>(PageSizeCombo);
         }
     }
 
@@ -297,7 +341,7 @@ public sealed partial class MainWindow : Window
     {
         if (ViewModel is not null)
         {
-            ViewModel.Margins = (MarginsOption)MarginsCombo.SelectedIndex;
+            ViewModel.Margins = SelectedOption<MarginsOption>(MarginsCombo);
         }
     }
 
@@ -305,7 +349,7 @@ public sealed partial class MainWindow : Window
     {
         if (ViewModel is not null)
         {
-            ViewModel.Orientation = (OrientationOption)OrientationCombo.SelectedIndex;
+            ViewModel.Orientation = SelectedOption<OrientationOption>(OrientationCombo);
         }
     }
 
@@ -313,7 +357,7 @@ public sealed partial class MainWindow : Window
     {
         if (ViewModel is not null)
         {
-            ViewModel.Quality = (QualityOption)QualityCombo.SelectedIndex;
+            ViewModel.Quality = SelectedOption<QualityOption>(QualityCombo);
         }
     }
 
@@ -407,10 +451,63 @@ public sealed partial class MainWindow : Window
     private async void AboutButton_Click(object sender, RoutedEventArgs e)
     {
         Version? version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-        AppVersionText.Text = version is not null ? $"Scanstack {version.ToString(3)}" : "Scanstack";
+        AppVersionText.Text = version is not null
+            ? string.Format(ResourceLoader.GetString("AppVersionFormat"), version.ToString(3))
+            : ResourceLoader.GetString("WindowTitle");
 
         AboutDialog.XamlRoot = RootGrid.XamlRoot;
         await AboutDialog.ShowAsync();
+    }
+
+    // Dedicated "Bureau of Stuff" support account, deliberately not the developer's personal
+    // address — shared across whatever future releases use the same account.
+    private const string SupportEmail = "thebureauofstuff@gmail.com";
+
+    private void CopyDiagnosticInfoButton_Click(object sender, RoutedEventArgs e)
+    {
+        var package = new DataPackage();
+        package.SetText(BuildDiagnosticInfo());
+        Clipboard.SetContent(package);
+    }
+
+    // Microsoft.UI.Xaml.dll's own assembly version does NOT track the WindowsAppSDK package
+    // version — confirmed live: this build references 2.3.1 (Img2PDF.App.csproj) but
+    // typeof(Application).Assembly.GetName().Version reports 3.0.0 regardless, a fixed number
+    // that's stayed the same across many WindowsAppSDK releases. Reporting that would actively
+    // mislead a version-specific bug report, so this is kept as a manually-updated constant
+    // instead — bump it alongside the PackageReference versions in Img2PDF.App.csproj.
+    private const string WindowsAppSdkVersion = "2.3.1";
+
+    private static string BuildDiagnosticInfo()
+    {
+        Version? appVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+
+        return string.Join(Environment.NewLine,
+            $"ClickTo: PDF {appVersion?.ToString(3) ?? "unknown"}",
+            $"Windows {Environment.OSVersion.Version}",
+            $"WindowsAppSDK {WindowsAppSdkVersion}");
+    }
+
+    private void OpenLogsFolderButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            Directory.CreateDirectory(AppLog.LogDirectoryPath);
+            Process.Start(new ProcessStartInfo(AppLog.LogDirectoryPath) { UseShellExecute = true });
+        }
+        catch (Exception)
+        {
+            // Best-effort — nothing useful to recover into if Explorer itself won't launch.
+        }
+    }
+
+    private async void ReportProblemButton_Click(object sender, RoutedEventArgs e)
+    {
+        Version? appVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+        string subject = Uri.EscapeDataString(
+            string.Format(ResourceLoader.GetString("ReportProblemMailSubject"), appVersion?.ToString(3) ?? "?"));
+
+        await Launcher.LaunchUriAsync(new Uri($"mailto:{SupportEmail}?subject={subject}"));
     }
 
     private async void SaveButton_Click(object sender, RoutedEventArgs e) => await SaveAsync();
@@ -481,6 +578,7 @@ public sealed partial class MainWindow : Window
         }
         catch (Exception ex)
         {
+            AppLog.LogError("SaveAsync", ex);
             ViewModel.ErrorMessage = ex.Message;
         }
         finally
