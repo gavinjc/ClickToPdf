@@ -1,7 +1,7 @@
 """Generates the full ClickTo MSIX icon asset set from a single vector definition.
 
 Run:  python tools/generate-icons.py
-Writes to src/Img2PDF.Package/Images/ and tools/out/ (store + .ico extras).
+Writes to src/ClickToPDF.Package/Images/ and tools/out/ (store + .ico extras).
 
 The mark is a fanned stack of three sheets with a red badge on the front sheet.
 Two treatments are produced:
@@ -21,7 +21,7 @@ BADGE_COLOR = (0xE0, 0x4A, 0x3F, 255)
 MASTER = 2048  # supersampled master; every asset is a LANCZOS downsample of this
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-IMAGES_DIR = os.path.join(HERE, "..", "src", "Img2PDF.Package", "Images")
+IMAGES_DIR = os.path.join(HERE, "..", "src", "ClickToPDF.Package", "Images")
 OUT_DIR = os.path.join(HERE, "out")
 
 # Fraction of a tile's short edge occupied by the glyph artboard on Start tiles.

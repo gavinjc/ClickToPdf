@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- Toolbar -->
+  <data name="ZoomLabel.Text" xml:space="preserve"><value>Zoom</value></data>
+  <data name="UndoButton.Content" xml:space="preserve"><value>Undo</value></data>
+  <data name="UndoButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Undo the last change</value></data>
+  <data name="UndoButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Undo</value></data>
+  <data name="SortButton.Content" xml:space="preserve"><value>Sort</value></data>
+  <data name="SortButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Sort again by the last order chosen. The arrow has more choices.</value></data>
+  <data name="SortButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Sort</value></data>
+  <data name="SortByNameItem.Text" xml:space="preserve"><value>Name (natural)</value></data>
+  <data name="SortByDateTakenItem.Text" xml:space="preserve"><value>Date taken</value></data>
+  <data name="SortByDateModifiedItem.Text" xml:space="preserve"><value>Date modified</value></data>
+  <data name="ReverseOrderItem.Text" xml:space="preserve"><value>Reverse current</value></data>
+  <data name="SaveButton.Content" xml:space="preserve"><value>Save</value></data>
+  <data name="AboutButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>About ClickTo: PDF</value></data>
+  <data name="AboutButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>About ClickTo: PDF</value></data>
+
+  <!-- Options panel -->
+  <data name="OptionsHeaderText.Text" xml:space="preserve"><value>Options</value></data>
+  <data name="PageSizeLabel.Text" xml:space="preserve"><value>Page size</value></data>
+  <data name="PageSizeA4Item.Content" xml:space="preserve"><value>A4</value></data>
+  <data name="PageSizeLetterItem.Content" xml:space="preserve"><value>Letter</value></data>
+  <data name="PageSizeMatchImageItem.Content" xml:space="preserve"><value>Match image</value></data>
+  <data name="MarginsLabel.Text" xml:space="preserve"><value>Margins</value></data>
+  <data name="MarginsNoneItem.Content" xml:space="preserve"><value>None</value></data>
+  <data name="MarginsNarrowItem.Content" xml:space="preserve"><value>Narrow (5 mm)</value></data>
+  <data name="MarginsStandardItem.Content" xml:space="preserve"><value>Standard (10 mm)</value></data>
+  <data name="OrientationLabel.Text" xml:space="preserve"><value>Orientation</value></data>
+  <data name="OrientationAutoItem.Content" xml:space="preserve"><value>Auto per page</value></data>
+  <data name="OrientationPortraitItem.Content" xml:space="preserve"><value>Force portrait</value></data>
+  <data name="QualityLabel.Text" xml:space="preserve"><value>Quality</value></data>
+  <data name="QualityOriginalItem.Content" xml:space="preserve"><value>Original</value></data>
+  <data name="QualityHighItem.Content" xml:space="preserve"><value>High (300 DPI)</value></data>
+  <data name="QualityMediumItem.Content" xml:space="preserve"><value>Medium (200 DPI)</value></data>
+  <data name="QualitySmallItem.Content" xml:space="preserve"><value>Small (150 DPI)</value></data>
+  <data name="GreyscaleCheckBox.Content" xml:space="preserve"><value>Greyscale</value></data>
+  <data name="SearchableCheckBox.Content" xml:space="preserve"><value>Make searchable (OCR)*</value></data>
+  <data name="SearchableCheckBox.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Adds an invisible, searchable text layer. Works best on clean printed text; increases save time.</value></data>
+  <data name="DeskewCheckBox.Content" xml:space="preserve"><value>Auto-deskew</value></data>
+  <data name="DeskewCheckBox.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Straightens pages scanned in slightly crooked. Only helps pages with real printed text, and adds the same OCR cost as Make searchable.</value></data>
+  <data name="OcrHandwritingDisclaimer.Text" xml:space="preserve"><value>* OCR recognizes printed text only — handwriting isn't supported and may produce garbled or no searchable text.</value></data>
+
+  <!-- Save progress -->
+  <data name="CancelSaveButton.Content" xml:space="preserve"><value>Cancel</value></data>
+
+  <!-- Empty state -->
+  <data name="EmptyStateText.Text" xml:space="preserve"><value>Drop images here, or</value></data>
+  <data name="ChooseImagesButton.Content" xml:space="preserve"><value>Choose images&#8230;</value></data>
+  <data name="ChooseImagesButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Choose images</value></data>
+
+  <!-- Page tile -->
+  <data name="LoadingText.Text" xml:space="preserve"><value>Loading&#8230;</value></data>
+  <data name="CantLoadText.Text" xml:space="preserve"><value>Can't load</value></data>
+  <data name="PreviewPageButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Preview page</value></data>
+  <data name="PreviewPageButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Preview page</value></data>
+  <data name="TileRotateButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Rotate right</value></data>
+  <data name="TileRotateButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Rotate right</value></data>
+  <data name="TileRemoveButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Remove from document</value></data>
+  <data name="TileRemoveButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Remove from document</value></data>
+
+  <!-- Message bar rows (code-behind); rows have no titles, so each is a whole sentence -->
+  <data name="SavedFormat" xml:space="preserve">
+    <value>Saved {0}</value>
+    <comment>{0} = the saved PDF's file name</comment>
+  </data>
+  <data name="OpenSavedFileAction" xml:space="preserve"><value>Open</value></data>
+  <data name="ShowInFolderAction" xml:space="preserve"><value>Show in folder</value></data>
+  <data name="SkippedOneFormat" xml:space="preserve">
+    <value>Skipped {0}</value>
+    <comment>{0} = the one file or folder name skipped, e.g. "Skipped notes.txt"</comment>
+  </data>
+  <data name="SkippedOneAlreadyAddedFormat" xml:space="preserve">
+    <value>Skipped {0}: already added</value>
+    <comment>{0} = the one file name skipped because it is already in the set</comment>
+  </data>
+  <data name="SkippedManyFormat" xml:space="preserve">
+    <value>{0} files skipped: {1}</value>
+    <comment>{0} = count, always 2 or more; {1} = comma-separated names, duplicates written with AlreadyAddedEntryFormat</comment>
+  </data>
+  <data name="AlreadyAddedEntryFormat" xml:space="preserve">
+    <value>already added: {0}</value>
+    <comment>One entry in SkippedManyFormat's list; {0} = file name</comment>
+  </data>
+
+  <!-- Floating add button -->
+  <data name="AddMoreButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Add more images</value></data>
+  <data name="AddMoreButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Add more images</value></data>
+
+  <!-- Preview overlay -->
+  <data name="PreviewCloseButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Close preview</value></data>
+  <data name="PreviewCloseButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Close preview</value></data>
+  <data name="PreviewRotateButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Rotate right</value></data>
+  <data name="PreviewRotateButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Rotate right</value></data>
+  <data name="PreviewIndicatorFormat" xml:space="preserve">
+    <value>{0} of {1}</value>
+    <comment>{0} = current page number, {1} = total page count, e.g. "3 of 12"</comment>
+  </data>
+
+  <!-- About dialog. The dialog itself and its strings (title, diagnostics, cross-promotion)
+       come from Bureau.Common; this app supplies only its own description. -->
+  <data name="AppDescriptionText" xml:space="preserve"><value>Combine images into a single PDF from File Explorer.</value></data>
+  <data name="UnexpectedErrorMessage" xml:space="preserve"><value>Something unexpected happened. Details were saved to a local log — see About &gt; Having trouble?</value></data>
+
+  <!-- Window title (code-behind); also the product name passed to the shared About dialog -->
+  <data name="WindowTitle" xml:space="preserve"><value>ClickTo: PDF</value></data>
+
+  <!-- Converters -->
+  <data name="PageCountSingular" xml:space="preserve"><value>1 page</value></data>
+  <data name="PageCountPluralFormat" xml:space="preserve">
+    <value>{0} pages</value>
+    <comment>{0} = page count, always 0 or 2+ (the "1 page" case uses PageCountSingular instead)</comment>
+  </data>
+
+  <data name="WindowTitleWithFolderFormat" xml:space="preserve">
+    <value>{0} – {1}</value>
+    <comment>{0} = folder name, {1} = app name (WindowTitle)</comment>
+  </data>
+  <data name="CloseConfirmDialog.Title" xml:space="preserve"><value>Save before closing?</value></data>
+  <data name="CloseConfirmDialog.Content" xml:space="preserve"><value>These pages haven't been saved as a PDF yet. If you close without saving, their order and rotations will be lost.</value></data>
+  <data name="CloseConfirmDialog.PrimaryButtonText" xml:space="preserve"><value>Save</value></data>
+  <data name="CloseConfirmDialog.SecondaryButtonText" xml:space="preserve"><value>Don't save</value></data>
+  <data name="CloseConfirmDialog.CloseButtonText" xml:space="preserve"><value>Cancel</value></data>
+  <data name="NothingToSaveMessage" xml:space="preserve"><value>None of these images could be opened, so there is nothing to save.</value></data>
+  <data name="HeicCodecMissingMessage" xml:space="preserve"><value>This HEIC photo needs two components from the Microsoft Store to open: "HEIF Image Extensions" and a separate HEVC decoder ("HEVC Video Extensions", or the free "HEVC Video Extensions from Device Manufacturer" if your PC's maker preinstalled it). Install both, then reload this file.</value></data>
+  <data name="WebpCodecMissingMessage" xml:space="preserve"><value>This WEBP photo needs the "Webp Image Extensions" app from the Microsoft Store to open. Install it, then reload this file.</value></data>
+  <data name="CodecMissingLinkButton.Content" xml:space="preserve"><value>Open Microsoft Store</value></data>
+
+  <!-- Help topics, listed in HelpTopicKeys.InOrder. Each is <Key>Title and <Key>Body. Bodies are
+       plain text: a blank line starts a new paragraph, and a "keys | action" line is a row of a
+       shortcut table (Bureau.Common app-conventions.md, Help). -->
+  <data name="HelpGettingStartedTitle" xml:space="preserve"><value>Getting started</value></data>
+  <data name="HelpGettingStartedBody" xml:space="preserve"><value>Select your images in File Explorer, right-click them and choose Combine to PDF. With a single image or folder selected, it reads Convert to PDF. On Windows 11 it is in the main right-click menu.
+
+The images open as pages in a grid, sorted by name. Arrange them the way you want, then choose Save.
+
+You can also select a folder: its images become the pages. Only the images directly inside it are used, not those in folders within it.
+
+To start without File Explorer, open ClickTo: PDF from the Start menu. Drop images onto the window, or use its Choose images… button.</value></data>
+  <data name="HelpFormatsTitle" xml:space="preserve"><value>Supported formats</value></data>
+  <data name="HelpFormatsBody" xml:space="preserve"><value>ClickTo: PDF reads JPG, PNG, HEIC and HEIF, TIFF, BMP, WEBP and GIF images. Other files you select or drop are skipped, and the message at the bottom of the window lists them.
+
+HEIC, HEIF and WEBP photos need free image extensions from the Microsoft Store, which many PCs don't have yet. Without them, the page shows Can't load. Click it to see what to install and to open the Microsoft Store. HEIC photos need both HEIF Image Extensions and an HEVC decoder. Once they are installed, add the image again.</value></data>
+  <data name="HelpArrangingTitle" xml:space="preserve"><value>Arranging pages</value></data>
+  <data name="HelpArrangingBody" xml:space="preserve"><value>Drag a page to move it. Each page shows its number in the top-left corner.
+
+Click a page to select it. Ctrl+click adds pages to the selection, Shift+click selects a run of pages, and Ctrl+A selects them all. The keyboard shortcuts work on every selected page at once.
+
+Each page has three buttons: preview, rotate right, and remove. Removing a page only takes it out of the PDF; the image file is never touched.
+
+Sort puts the pages in order by Name (natural), Date taken or Date modified. Name (natural) puts page 2 before page 10. Date taken uses the date the camera recorded, or the date modified when there isn't one. Reverse current turns the present order around. The sort you choose is remembered for next time. Clicking Sort itself, rather than its arrow, sorts again by that order; until you choose one, that is Name (natural).
+
+The Zoom slider makes the pages bigger or smaller. It is remembered too.</value></data>
+  <data name="HelpPreviewTitle" xml:space="preserve"><value>Preview</value></data>
+  <data name="HelpPreviewBody" xml:space="preserve"><value>Double-click a page, or choose its preview button, to see it large.
+
+Use the Left and Right arrow keys to step through the pages. The rotate button in the corner rotates the page you are looking at.
+
+Press Esc, choose the close button, or click outside the page to close the preview.</value></data>
+  <data name="HelpAddingTitle" xml:space="preserve"><value>Adding more images</value></data>
+  <data name="HelpAddingBody" xml:space="preserve"><value>Add images to the pages you already have in any of these ways:
+• Drag images or folders from File Explorer onto the window.
+• Choose the round + button at the bottom right.
+• Use the Choose images… button on an empty window.
+
+Adding never replaces what is there. New images go after the existing pages, unless you sorted by date, in which case all the pages are sorted again.
+
+An image that is already one of the pages isn't added twice; the message at the bottom says it was already added. A dropped folder adds the images directly inside it.</value></data>
+  <data name="HelpUndoTitle" xml:space="preserve"><value>Undo</value></data>
+  <data name="HelpUndoBody" xml:space="preserve"><value>Choose Undo, or press Ctrl+Z, to take back the last change. You can undo up to 20 changes.
+
+Each of these is one change, however many pages it affects: dragging a page, moving pages with Ctrl+arrow keys, rotating, removing, sorting or reversing, and adding images.
+
+Changes to the options and saving aren't undone.</value></data>
+  <data name="HelpSavingTitle" xml:space="preserve"><value>Saving</value></data>
+  <data name="HelpSavingBody" xml:space="preserve"><value>Choose Save, or press Enter, and pick where to save the PDF. The name suggested is Scan_ followed by today's date, such as Scan_2026-10-31.pdf, with a number added if that name is already taken next to your images.
+
+Save is unavailable for a moment while pages are loading, so that every page is the right way up before it goes into the PDF.
+
+While a save is running, the pages and options can't be changed until it finishes or is cancelled. A PDF of more than 10 pages shows a progress bar with Cancel. Cancelling, or a save that fails, never damages a PDF you chose to replace: it is only replaced once the new one is complete.
+
+Pages showing Can't load are left out of the PDF, and the message after saving lists them. That message also has Open and Show in folder.
+
+If you close the window with pages that haven't been saved, ClickTo: PDF asks whether to save them first.</value></data>
+  <data name="HelpSaveOptionsTitle" xml:space="preserve"><value>Save options</value></data>
+  <data name="HelpSaveOptionsBody" xml:space="preserve"><value>Choose Options, below the toolbar, to change how the PDF is made. The options start at their defaults each time the app opens.
+
+Page size: A4, Letter, or Match image, which makes each page the size of its image.
+
+Margins: None, Narrow (5 mm) or Standard (10 mm) around each image.
+
+Orientation: Auto per page turns each page to suit its image. Force portrait keeps every page upright.
+
+Quality: Original keeps JPG photos exactly as they are and adds other images without losing detail. High (300 DPI), Medium (200 DPI) and Small (150 DPI) make the PDF smaller, giving up some detail.
+
+Greyscale saves the pages in shades of grey.</value></data>
+  <data name="HelpSearchableTitle" xml:space="preserve"><value>Searchable text and Auto-deskew</value></data>
+  <data name="HelpSearchableBody" xml:space="preserve"><value>Make searchable (OCR) adds an invisible layer of text over each page, so you can search the PDF and copy its words. The page looks the same.
+
+Auto-deskew straightens pages that were scanned in slightly crooked.
+
+Both read the text with Windows' own text recognition, in your Windows language, so both make saving take longer. They need Windows' text recognition for that language to be installed. Without it, they do nothing, and there is no warning.
+
+They work on printed text only. Handwriting gives garbled text or none, and won't straighten a page.</value></data>
+  <data name="HelpShortcutsTitle" xml:space="preserve"><value>Keyboard shortcuts</value></data>
+  <data name="HelpShortcutsBody" xml:space="preserve"><value>The page shortcuts work once you have clicked a page.
+
+Pages
+Ctrl+A | Select all pages
+Ctrl+Left / Ctrl+Right | Move the selected pages one place
+R | Rotate the selected pages right
+Shift+R | Rotate the selected pages left
+Delete | Remove the selected pages from the PDF
+
+Preview
+Left / Right | Previous or next page
+Esc | Close the preview
+
+Anywhere
+Ctrl+Z | Undo
+Enter | Save
+F1 | Open Help
+
+In Help
+Esc | Close Help</value></data>
+  <data name="HelpPrivacyTitle" xml:space="preserve"><value>Privacy</value></data>
+  <data name="HelpPrivacyBody" xml:space="preserve"><value>ClickTo: PDF works entirely on your PC. It never connects to the internet, needs no account and sends no telemetry.
+
+It only reads your images. It never changes, moves or deletes them: rotating or removing a page changes the PDF, not the image.
+
+The zoom level, the last sort and the app's log files are kept on this PC and removed when you uninstall the app.</value></data>
+  <data name="HelpTroubleshootingTitle" xml:space="preserve"><value>Troubleshooting</value></data>
+  <data name="HelpTroubleshootingBody" xml:space="preserve"><value>Combine to PDF isn't in the right-click menu
+It only appears when the selection includes at least one supported image or a folder. You can always open ClickTo: PDF from the Start menu and drop images onto it.
+
+A page shows Can't load
+Click it to see why. A HEIC, HEIF or WEBP photo usually needs a free image extension from the Microsoft Store (see Supported formats). A damaged file can't be read at all. Pages that can't load are left out when you save.
+
+Make searchable or Auto-deskew made no difference
+See Searchable text and Auto-deskew: they need Windows' text recognition for your language, and printed text.
+
+Reporting a problem
+Choose About (i) at the top right, then under Having trouble? choose Open logs folder to find the log files, or Report a problem to email us. Attaching the latest log file helps.</value></data>
+</root>

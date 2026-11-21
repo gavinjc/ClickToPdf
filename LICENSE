@@ -6,8 +6,11 @@ No permission is granted to any person to copy, modify, merge, publish, distribu
 sublicense, and/or sell copies of this software or any portion of it, for any purpose,
 commercial or non-commercial, without the express prior written permission of the
 copyright holder. Viewing and cloning the source for evaluation purposes (e.g. as part
-of a hiring process) is permitted; use of the software beyond running the provided
-installer for personal, non-commercial evaluation is not.
+of a hiring process) is permitted. Building it to evaluate it is permitted; redistributing
+any build of it is not.
+
+The published app is available from the Microsoft Store, and its use is governed by the
+Store's terms, not by this file.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A

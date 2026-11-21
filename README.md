@@ -4,11 +4,10 @@ A Windows utility that turns a folder of scanned images into a single PDF, in ab
 three clicks. Select images in File Explorer, right-click, **Combine to PDF**, drag the
 pages into order, save.
 
-> Portfolio snapshot of a shipped project — see [License](#license). The maintained
-> source lives at [The-Bureau-of-Stuff/Img2PDF](https://github.com/The-Bureau-of-Stuff/Img2PDF)
-> (public, MIT); this copy is a point-in-time mirror and won't track every future change.
+> Portfolio snapshot of a shipped project — see [License](#license). The maintained source is
+> private; this copy is a point-in-time mirror and won't track every future change.
 
-**Published on the Microsoft Store**, v1.0.0.
+**Published on the Microsoft Store**, v1.0.3.
 
 ## Screenshots
 
@@ -50,7 +49,7 @@ the pages, drag them into order, done.
 - A4 or Letter output, automatic per-page orientation, adjustable margins/quality/greyscale
 - JPEGs are embedded without re-encoding wherever possible — no quality loss, no bloat
 - EXIF orientation honoured; images always scaled to fit, aspect ratio preserved, never cropped
-- Local-only diagnostic logging and an About-dialog "Report a problem" flow — nothing is ever transmitted
+- Built-in offline Help (F1), local-only diagnostic logging and an About-dialog "Report a problem" flow — nothing is ever transmitted
 - No account, no telemetry, no network calls — everything happens on-device; source images are opened read-only and never modified
 
 ## Tech stack
@@ -61,33 +60,37 @@ the pages, drag them into order, done.
 | App UI | C# / .NET 8, WinUI 3, MVVM via CommunityToolkit.Mvvm |
 | Image decode | `Windows.Graphics.Imaging.BitmapDecoder` (WinRT) |
 | PDF writing | [PDFsharp](https://github.com/empira/PDFsharp) 6.x, with JPEG passthrough |
+| Shared UI | [Bureau.Common](https://github.com/gavinjc/Bureau.Common) (git submodule): About, Help and message-bar chrome shared with the other ClickTo apps |
 | Packaging | Windows Application Packaging Project → MSIX |
 | Tests | xUnit |
 
 Three components ship in one MSIX package: a native shell-extension DLL that Explorer
 loads directly (kept deliberately tiny and crash-proof), the WinUI 3 app that does all
-the real work, and the packaging project that bundles them. See
-[`docs/pagemerge-spec.md`](docs/pagemerge-spec.md) for the full technical spec and the
-architecture rationale, and [`docs/ui-refinement-brief.md`](docs/ui-refinement-brief.md)
-for the UI design pass.
+the real work, and the packaging project that bundles them. The design docs and spec stay
+in the private repo; the [Bureau.Common](https://github.com/gavinjc/Bureau.Common) repo
+includes the conventions the four ClickTo apps share.
+
+ClickTo: PDF was the first of four ClickTo apps. The others —
+[ClickTo: Images](https://github.com/gavinjc/ClickToImages),
+[ClickTo: Slideshow](https://github.com/gavinjc/ClickToSlideshow) and
+[ClickTo: Speech](https://github.com/gavinjc/ClickToSpeech) — reuse its shell-extension and
+app structure, and all four share [Bureau.Common](https://github.com/gavinjc/Bureau.Common).
 
 ## Project layout
 
 ```
 src/
-  Img2PDF.Core/            Imaging, layout, PDF composition, OCR — no UI dependencies
-  Img2PDF.App/              WinUI 3 app: MainWindow, ViewModels, state, converters
-  Img2PDF.Cli/               Console entry point used for engine validation
-  Img2PDF.ShellExtension/   Native C++ IExplorerCommand implementation
-  Img2PDF.Package/          MSIX packaging project
+  ClickToPDF.Core/            Imaging, layout, PDF composition, OCR — no UI dependencies
+  ClickToPDF.App/             WinUI 3 app: MainWindow, ViewModels, state, converters
+  ClickToPDF.Cli/             Console entry point used for engine validation
+  ClickToPDF.ShellExtension/  Native C++ IExplorerCommand implementation
+  ClickToPDF.Package/         MSIX packaging project
 tests/
-  Img2PDF.Core.Tests/       Deskew, page layout, OCR mapping
-  Img2PDF.App.Tests/        Settings, natural sort, save-file naming, undo
+  ClickToPDF.Core.Tests/      Deskew, page layout, OCR mapping
+  ClickToPDF.App.Tests/       Settings, natural sort, save-file naming, undo
+external/
+  Bureau.Common/              Shared About/Help/message-bar chrome (submodule)
 ```
-
-Note: the codebase keeps the original `Img2PDF.*` naming throughout (repo, projects,
-namespaces) even after the product itself was renamed to ClickTo: PDF for the Store —
-an intentional internal-codename-vs-brand split, not drift.
 
 ## Download
 
@@ -100,14 +103,15 @@ no certificate to trust, signed with a proper Store certificate.
 
 ## Building from source
 
-Requires Visual Studio 2022 with the "Universal Windows Platform development" and
-".NET desktop development" workloads. Open `Img2PDF.sln` and build/run the
-`Img2PDF.App` project directly, or build the `Img2PDF.Package` project to produce an
-installable (unsigned) MSIX package.
+Clone with submodules: `git clone --recursive https://github.com/gavinjc/ClickToPdf`.
+GitHub's "Download ZIP" leaves the submodule out, so the solution won't build from a ZIP.
+
+Requires Visual Studio 2022 with the ".NET desktop development", "Desktop development with C++"
+and "Windows application development" workloads. Open `ClickToPDF.sln` and run the
+`ClickToPDF.App` project directly, or build the `ClickToPDF.Package` project to produce an
+MSIX package.
 
 ## License
 
-All rights reserved — see [LICENSE](LICENSE). Source is shared here for portfolio
-purposes; no reuse, modification, or redistribution rights are granted. (The maintained
-original at [The-Bureau-of-Stuff/Img2PDF](https://github.com/The-Bureau-of-Stuff/Img2PDF)
-is MIT-licensed.)
+All rights reserved — see [LICENSE](LICENSE). The source is shared here for portfolio purposes;
+no rights to reuse, modify or redistribute it are granted.

@@ -10,11 +10,10 @@ BundleArtifacts/
 *.msix
 *.appxsym
 *.msixsym
+*.assets.cache
 
-# Per-dev-machine signing cert and its public half — regenerate together, don't commit
-# (the .cer shipped to users comes from the release zip, not source control)
+# Per-dev-machine signing cert — never shared/committed (see M5 plan)
 *.pfx
-*.cer
 
 # Generated icon/logo artifacts — reproducible from tools/generate-icons.py, not source
 tools/out/
@@ -28,4 +27,3 @@ tools/out/
 # OS
 Thumbs.db
 .DS_Store
-*.assets.cache
